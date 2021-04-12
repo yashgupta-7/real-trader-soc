@@ -22,7 +22,7 @@ Grid world problem : https://towardsdatascience.com/implement-grid-world-with-q-
 
 Tic-Tac-Toe : https://towardsdatascience.com/how-to-play-tic-tac-toe-using-reinforcement-learning-9604130e56f6
 
---------- Complete upto here, and then we'll resume after endsems/midsems---------
+--------- **Complete upto here, and then we'll resume after endsems/midsems**---------
 
 Quant Trading :
 
