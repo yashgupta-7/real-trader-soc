@@ -25,6 +25,7 @@ class Grid:
             X = "|"
             for j in range(0,self.gridDyn.shape[1]):
                 X+=self.gridDyn[i][j]
+                X+="|"
             print(X)
 
         print("----------------------------------------------------")
@@ -67,9 +68,9 @@ class Qlearn(Grid):
         A = float('-inf')*A
         A = np.expand_dims(A,1)
         A = A.T
-        RU = self.reward[1:n,:]
+        RU = self.reward[0:n-1,:]
         RU = np.vstack((A,RU))
-        RD = self.reward[0:n-1,:]
+        RD = self.reward[1:n,:]
         RD = np.vstack((RD,A))
         self.R = np.zeros((4,n,m))
         self.R[0,:,:] = RL
@@ -207,9 +208,9 @@ class Qlearn(Grid):
 N = int(input("Enter the Number of Rows in your grid :"))
 M = int(input("Enter the Number of Columns in your grid :"))
 si = int(input("Enter the row of the starting point of your grid (0-based index):"))
-sj = int(input("Enter the column of the starting point of your grid (1-based index):"))
+sj = int(input("Enter the column of the starting point of your grid (0-based index):"))
 ei = int(input("Enter the row of the target point of your grid (0-based index):"))
-ej = int(input("Enter the column of the target point of your grid (1-based index):"))
+ej = int(input("Enter the column of the target point of your grid (0-based index):"))
 
 nb = int(input("Enter the number of less-appropriate cells you wanna have in your grid :"))
 block = []
