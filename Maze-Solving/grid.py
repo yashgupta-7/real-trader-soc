@@ -54,7 +54,7 @@ class Qlearn(Grid):
                 self.Q[3][i][j] = 0
                 if i==target[0] and j==target[1]:
                     self.reward[i][j] = 50
-                if self.gridStat[i][j]=='z':
+                if self.gridStat[i][j]=='B':
                     self.reward[i][j] = -1000
 
         A = np.ones(n)
@@ -220,8 +220,8 @@ for i in range(nb):
     ij = int(input("Enter the coulmn no. of the {num} th cell:".format(num = i+1)))
     block.append((ii,ij))
 
-g = 0.7
-a = 0.8
+g = 0.8
+a = 0.001
 ifg = input("Do you want to give a gamma(Deprication factor for Rewards) of your choice? Y/N")
 if ifg=='Y':
     g = float(input("Gamma:"))
@@ -230,7 +230,7 @@ if ifa=='Y':
     a = float(input("Alpha:"))
 
 myAgent = Qlearn(N,M,(ei,ej),(si,sj), block, _gamma = g, _alpha = a)
-numiter = 200
+numiter = 10000
 ifi = input("Do you want to give number of iterations of Training your choice(default: 200)? Y/N")
 if ifi=='Y':
     numiter = int(input("Number of Iterations:"))
