@@ -6,24 +6,25 @@ class Grid:
 
     def __init__(self, n , m , target , start , blockades):
 
-        self.grid = np.zeros((n,m),'<U1')
-        for i in range(0,self.grid.shape[0]):
-            for j in range(0,self.grid.shape[1]):
-                self.grid[i][j] = '_'
+        self.gridStat = np.zeros((n,m),'<U1')
+        for i in range(0,self.gridStat.shape[0]):
+            for j in range(0,self.gridStat.shape[1]):
+                self.gridStat[i][j] = '_'
         self._start = start
         self._target = target
-        self.grid[start[0]][start[1]] = 'o'
-        self.grid[target[0]][target[1]] = 'x'
+        self.gridStat[start[0]][start[1]] = 'O'
+        self.gridStat[target[0]][target[1]] = 'X'
         for (i,j) in blockades:
-            self.grid[i][j] = 'z'
+            self.gridStat[i][j] = 'B'
+        self.gridDyn = self.gridStat
 
 
     def showgrid(self):
         print("----------------------------------------------------")
-        for i in range(0,self.grid.shape[0]):
+        for i in range(0,self.gridDyn.shape[0]):
             X = "|"
-            for j in range(0,self.grid.shape[1]):
-                X.append(grid[i][j])
+            for j in range(0,self.gridDyn.shape[1]):
+                X+=self.gridDyn[i][j]
             print(X)
 
         print("----------------------------------------------------")
@@ -36,7 +37,7 @@ class Qlearn(Grid):
     def __init__(self, n,m,target, start, blockade, _gamma = 0.7, _alpha = 0.8):
         #print(len(blockades))
         Grid.__init__(self,n,m,target,start, blockade)
-        self.Q = np.zeros((n,m,4))
+        self.Q = np.zeros((4,n,m))
         self.reward = np.zeros((n,m))
         self._n = n
         self._m = m
@@ -44,15 +45,15 @@ class Qlearn(Grid):
         self.alpha = _alpha
         self.numIter = 0
         self.Opt = ""
-        for i in range(0,self.grid.shape[0]):
-            for j in range(0,self.grid.shape[1]):
-                self.Q[i][j][0] = 0
-                self.Q[i][j][1] = 0
-                self.Q[i][j][2] = 0
-                self.Q[i][j][3] = 0
+        for i in range(0,self.gridStat.shape[0]):
+            for j in range(0,self.gridStat.shape[1]):
+                self.Q[0][i][j] = 0
+                self.Q[1][i][j] = 0
+                self.Q[2][i][j] = 0
+                self.Q[3][i][j] = 0
                 if i==target[0] and j==target[1]:
                     self.reward[i][j] = 50
-                if self.grid[i][j]=='z':
+                if self.gridStat[i][j]=='z':
                     self.reward[i][j] = -1000
 
         A = np.ones(n)
@@ -101,6 +102,10 @@ class Qlearn(Grid):
             if i==self._target[0] and j==self._target[1]:
                 cando = True
                 break
+            #print("i is {ii}, j is {jj}".format(ii = i, jj = j))
+            if (i<0) or (i>=self._n) or (j<0) or (j>=self._m):
+                #print("This!")
+                break
         if cando:
             self.Opt = op
 
@@ -110,55 +115,123 @@ class Qlearn(Grid):
             if i % 10 == 0:
                 self.OptPath()
                 print('After {nu} iterations, The shortest path has length : {len}'.format(nu = i, len = len(self.Opt)))
-            A = np.ones(n)
+            A = np.ones(self._n)
             A = float('-inf')*A
             A = np.expand_dims(A,1)
-            QL = self.Q[:,:,1:m]
+            QL = self.Q[:,:,1:self._m]
             QL = QL.max(axis = 0)
             QL = np.hstack((QL,A))
-            QR = self.Q[:,:,0:m-1]
-            QR = QL.max(axis = 0)
+            QR = self.Q[:,:,0:self._m-1]
+            QR = QR.max(axis = 0)
             QR = np.hstack((A,QR))
-            A = np.ones(m)
+            A = np.ones(self._m)
             A = float('-inf')*A
             A = np.expand_dims(A,1)
             A = A.T
-            QU = self.Q[:,0:n-1,:]
+            QU = self.Q[:,0:self._n-1,:]
             QU = QU.max(axis = 0)
             QU = np.vstack((A,QU))
-            QD = self.Q[:,1:n,:]
+            QD = self.Q[:,1:self._n,:]
             QD = QD.max(axis = 0)
             QD = np.vstack((QD,A))
-            QK = np.zeros((4,n,m))
+            QK = np.zeros((4,self._n,self._m))
             QK[0,:,:] = QL
             QK[1,:,:] = QU
             QK[2,:,:] = QR
             QK[3,:,:] = QD
 
-            QK = self.R + (self.gamma)*QK
+            QK = self.alpha*(self.R + (self.gamma)*QK)
 
-            self.Q = self.Q + (self.alpha)*(QK-self.Q)
-
-
-
+            self.Q = self.Q*(1-self.alpha)
+            self.Q = self.Q + QK
 
 
+    def PrintCac(self):
+
+        if len(self.Opt)==0:
+            print("Training Incomplete!")
+            return
+        print("The Q-Values look like: ")
+        print("The First Matrix denotes the values of Left, the second for Up, then right and then down")
+
+        print(self.Q)
+
+        print("The Way to proceed will be as follows: ")
+
+        i = self._start[0]
+        j = self._start[1]
+        print("Presently the Grid Looks like: ")
+        self.showgrid()
+        k = 0
+        op = self.Opt
+        while i!=self._target[0] or j!=self._target[1]:
+
+            if op[k]=='0':
+
+                print("Then the Bot moved left from ({bi},{bj}) to ({bbi},{bbj})".format(bi = i,bj = j, bbi = i, bbj = j+1))
+                self.gridDyn[i][j] = self.gridStat[i][j]
+                if self.gridStat[i][j]=='O':
+                    self.gridDyn[i][j] = '_'
+                self.gridDyn[i][j+1] = 'O'
+                j+=1
+
+            elif op[k]=='1':
+                print("Then the Bot moved up from ({bi},{bj}) to ({bbi},{bbj})".format(bi = i,bj = j, bbi = i-1, bbj = j))
+                self.gridDyn[i][j] = self.gridStat[i][j]
+                if self.gridStat[i][j]=='O':
+                    self.gridDyn[i][j] = '_'
+                self.gridDyn[i-1][j] = 'O'
+                i-=1
+            elif op[k]=='2':
+                print("Then the Bot moved right from ({bi},{bj}) to ({bbi},{bbj})".format(bi = i,bj = j, bbi = i, bbj = j-1))
+                self.gridDyn[i][j] = self.gridStat[i][j]
+                if self.gridStat[i][j]=='O':
+                    self.gridDyn[i][j] = '_'
+                self.gridDyn[i][j-1] = 'O'
+                j-=1
+            else:
+                print("Then the Bot moved down from ({bi},{bj}) to ({bbi},{bbj})".format(bi = i,bj = j, bbi = i+1, bbj = j))
+                self.gridDyn[i][j] = self.gridStat[i][j]
+                if self.gridStat[i][j]=='O':
+                    self.gridDyn[i][j] = '_'
+                self.gridDyn[i+1][j] = 'O'
+                i+=1
+
+            self.showgrid()
+            k+=1
 
 
-N = 6#int(input("Enter the Number of Rows in your grid :"))
-M = 6#int(input("Enter the Number of Columns in your grid :"))
-si = 1#int(input("Enter the row of the starting point of your grid (0-based index):"))
-sj = 1#int(input("Enter the column of the starting point of your grid (1-based index):"))
-ei = 5#int(input("Enter the row of the target point of your grid (0-based index):"))
-ej = 5#int(input("Enter the column of the target point of your grid (1-based index):"))
 
-nb = 1#int(input("Enter the number of less-appropriate cells you wanna have in your grid :"))
+
+
+N = int(input("Enter the Number of Rows in your grid :"))
+M = int(input("Enter the Number of Columns in your grid :"))
+si = int(input("Enter the row of the starting point of your grid (0-based index):"))
+sj = int(input("Enter the column of the starting point of your grid (1-based index):"))
+ei = int(input("Enter the row of the target point of your grid (0-based index):"))
+ej = int(input("Enter the column of the target point of your grid (1-based index):"))
+
+nb = int(input("Enter the number of less-appropriate cells you wanna have in your grid :"))
 block = []
 
 for i in range(nb):
-    ii = 2#int(input("Enter the row no. of the {num} th cell:".format(num = i+1)))
-    ij = 3#int(input("Enter the coulmn no. of the {num} th cell:".format(num = i+1)))
+    ii = int(input("Enter the row no. of the {num} th cell:".format(num = i+1)))
+    ij = int(input("Enter the coulmn no. of the {num} th cell:".format(num = i+1)))
     block.append((ii,ij))
 
-myAgent = Qlearn(N,M,(ei,ej),(si,sj), block)
-myAgent.Train(100)
+g = 0.7
+a = 0.8
+ifg = input("Do you want to give a gamma(Deprication factor for Rewards) of your choice? Y/N")
+if ifg=='Y':
+    g = float(input("Gamma:"))
+ifa = input("Do you want to give alpha (the learning rate) of your choice? Y/N")
+if ifa=='Y':
+    a = float(input("Alpha:"))
+
+myAgent = Qlearn(N,M,(ei,ej),(si,sj), block, _gamma = g, _alpha = a)
+numiter = 200
+ifi = input("Do you want to give number of iterations of Training your choice(default: 200)? Y/N")
+if ifi=='Y':
+    numiter = int(input("Number of Iterations:"))
+myAgent.Train(iterations = numiter)
+myAgent.PrintCac()
