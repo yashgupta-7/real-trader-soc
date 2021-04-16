@@ -46,6 +46,7 @@ class Qlearn(Grid):
         self.alpha = _alpha
         self.numIter = 0
         self.Opt = ""
+        self.Qval = 0
         for i in range(0,self.gridStat.shape[0]):
             for j in range(0,self.gridStat.shape[1]):
                 self.Q[0][i][j] = 0
@@ -85,12 +86,14 @@ class Qlearn(Grid):
         cando = False
         i = self._start[0]
         j = self._start[1]
+        Qc = 0
         while it<maxi :
             dec = self.Q[:,i,j].argmax(axis = 0)
 
             if self.Q[dec][i][j] == float('-inf'):
                 break
             else:
+                Qc+=self.Q[dec][i][j]
                 if dec==0:
                     j+=1
                 elif dec==1:
@@ -107,7 +110,9 @@ class Qlearn(Grid):
             if (i<0) or (i>=self._n) or (j<0) or (j>=self._m):
                 #print("This!")
                 break
+            it+=1
         if cando:
+            self.Qval = Qc
             self.Opt = op
 
 
@@ -115,7 +120,7 @@ class Qlearn(Grid):
         for i in range(iterations):
             if i % 10 == 0:
                 self.OptPath()
-                print('After {nu} iterations, The shortest path has length : {len}'.format(nu = i, len = len(self.Opt)))
+                print('After {nu} iterations, The shortest path has length : {len}'.format(nu = i, len =self.Qval))
             A = np.ones(self._n)
             A = float('-inf')*A
             A = np.expand_dims(A,1)
