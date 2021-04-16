@@ -120,7 +120,7 @@ class Qlearn(Grid):
         for i in range(iterations):
             if i % 10 == 0:
                 self.OptPath()
-                print('After {nu} iterations, The shortest path has length : {len}'.format(nu = i, len =self.Qval))
+                print('After {nu} iterations, The shortest path has Cumulative Q-value : {len}'.format(nu = i, len =self.Qval))
             A = np.ones(self._n)
             A = float('-inf')*A
             A = np.expand_dims(A,1)
