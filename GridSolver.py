@@ -1,10 +1,12 @@
 '''
 Grid World Solver with Policy iteration
 Synchronous Sweep method
+Finds Policy
 Author: P Balasubramanian
 Start Date: 16 May 2021
 End Date: 17 May 2021
 Estimated Time for Completion: 8 Hours
+
 '''
 import numpy as np
 
@@ -139,40 +141,33 @@ class Agent(Grid):
 				if j < self.policy.shape[2]-1:
 					self.policy[1][i][j] = self.value[i][j+1]/nxt_state_values_sum	
 
-	def train(self,Category,num_of_iterations=100,gamma=0.9):#To train the agent using DP techniques
-	# Categ '1' is iterations Categ '2' is convergence to find optimal policy	
-		if Category==1:
-			for i in range(num_of_iterations):
-				new_value = self.policy_evaluation(gamma)
-				self.value = new_value
-				self.policy_improvement()	
-
-		elif Category==2:
-			theta=int(input("The theta value to test convergence = 10^(-x) where x is: "))
-			theta=pow(10,(-1)*theta)
-
+	def train(self,num_of_iterations,gamma):#To train the agent using DP techniques	
+		
+		for i in range(num_of_iterations):
 			new_value = self.policy_evaluation(gamma)
-			difference = np.absolute(new_value - self.value)
-			self.value = new_value	
-			self.policy_improvement()
-
-			while np.amax(difference)>theta:
-				new_value = self.policy_evaluation(gamma)
-				difference = np.absolute(new_value - self.value)
-				self.value = new_value	
-				self.policy_improvement()
+			self.value = new_value
+			self.policy_improvement()	
 			
 		self.disp_policy()
-
-			
-	# def play(self):#find optimal path from start to target after the Agent has been trained
-
+		self.disp_value()
 
 	def disp_policy(self):	#display policy
 		for i in range(self.policy.shape[1]):
 			for j in range(self.policy.shape[2]):
 				print("Policy in ",i,",",j,"is U: ",self.policy[0][i][j]," D: ",self.policy[2][i][j]," R: ",self.policy[1][i][j]," L: ",self.policy[3][i][j])
 
+	def disp_value(self):	#display value grid
+		print("Value Grid")
+		print("----------------------------------------------------")
+		
+		for i in range(self.policy.shape[1]):
+			X = "|"
+			for j in range(self.policy.shape[2]):
+				X+=str(self.value[i][j])
+				X+="|"
+			print(X)
+
+		print("----------------------------------------------------")
 
 # Getting Inputs about the Grid
 Rows = int(input("Enter the number of rows in the Grid: "))	
@@ -196,7 +191,6 @@ for i in range(no_restricted_positions):
 
 num_of_iterations = 100
 gamma = 0.8
-category=1
 
 ans = input("Do you want to enter the number of iterations? [Y/N]")
 if ans=='Y' or ans=='y':
@@ -208,8 +202,6 @@ if ans=='Y' or ans=='y':
 	print("Enter a number between 0 and 1")
 	gamma = double(input("Enter gamma: "))
 
-category= int(input("Do you want Agent to be trained \n1.Based on Number of Iterations\n2.Convergence to optimal policy?: "))
-
 G = Grid(Rows,Columns,Start,Target,restricted_positions)
 A = Agent(G)
-A.train(category,num_of_iterations,gamma)
+A.train(num_of_iterations,gamma)
