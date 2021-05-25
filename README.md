@@ -3,6 +3,9 @@
 
 This is the repository of programs and reports of the Summer of Code 2021 Module R(ea)L Trader where we make an Reinforcement Learning based Trading Agent to trade shares.
 
+![](money.gif)
+
+
 Resources Referred To:
 
 Python : https://www.w3schools.com/python/
