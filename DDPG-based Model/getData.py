@@ -25,16 +25,18 @@ class Par:
             else:
                 y = x.split(',')
                 if y[1] != k:
+                    if k!=0:
+                        self.dat.append(pd.DataFrame(dict))
                     k = y[1]
                     j+=1
-                    self.dat.append(pd.DataFrame(dict))
+
                     for z in leg:
                         dict[z] = []
 
                 for i in range(0,len(leg)):
                     dict[leg[i]].append(y[i])
-                 dict[leg[1]].pop()
-                 dict[leg[1]].append(j)
+                dict[leg[1]].pop()
+                dict[leg[1]].append(j)
 
             i+=1
             if j > self.ent:
