@@ -35,71 +35,6 @@ class PreProcess :
         self.gamma = _gamma
 
 
-    def GetStateVec(self):
-        print(self.data[0])
-        for x in self.data:
-            z = np.array(x)
-            L = []
-            P = []
-            #print(z.shape)
-            for i in range(0,z.shape[0]):
-                L += list(z[i,[3,8,9,10,11]])
-                P.append(z[i,3])
-            #print(len(L))
-            #print(len(P))
-            self.vecf.append(L)
-            self.pricf.append(P)
-
-    #The State is s at time t
-    def CreateDataSet(self):
-
-        for i in range(0,len(self.vecf)-21):
-            sd = []
-            for g in range(0,30):
-                #print('i = ',i,', g = ',g,', shape of vecf is ', len(self.vecf),len(self.vecf[i]))
-                sd+=self.vecf[i][g]
-            for j in range(0,5):
-                sd+=list(np.random.randint(0,1000,30))
-                for k in range(0,5):
-                    sd.append(random.random()*1000000)
-                    for z in range(0,10):
-                        La = np.zeros(30)
-                        bc = sd[-1]
-                        tod = []
-                        for t in range(0,30):
-                            a = random.randint(-1,1)
-                            if a == -1:
-                                bu = -int(random.random()*float(sd[150+t]))
-                                bc+=GetSingleTransacBC(self.pricf[i][t],dk = bu)
-                                La[t]=bu
-                            elif a==1:
-                                tod.append(t)
-                        bcp = bc*random.random()
-                        ston = np.random.randint(0,1000,len(tod))
-                        ston = (ston/np.sum(ston))*bcp
-                        g = 0
-                        for x in tod:
-                            La[x]=int(ston[g]/self.pricf[i][x])
-                            g+=1
-                        self.XI.append(sd)
-                        self.AI.append(La)
-                        snext = []
-                        for g in range(0,30):
-                            snext+=self.vecf[i+1][g]
-                        snext += list(np.array(sd[150:180])+np.array(La))
-                        snext.append(sd[-1]+GetBalanceChange(self.pricf[i],dk = La))
-                        self.yi.append(TargetQ(snext,i+1))
-
-        with open('XI.npy','wb') as f:
-            np.save(f,np.array(self.XI))
-        with open('YI.npy','wb') as f:
-            np.save(f,np.array(self.YI))
-        with open('AI.npy','wb') as f:
-            np.save(f,np.array(self.AI))
-
-
-
-
     def TargetQ(self, s, t):
         Qi = 0
         sd = s
@@ -108,7 +43,7 @@ class PreProcess :
         if t>=len(self.vecf)-1:
             return Qi
         else:
-            for i in range(1,20):
+            for i in range(1,100):
                 if td == len(self.vecf)-1:
                     break
                 K = np.zeros(30)
@@ -149,18 +84,95 @@ class PreProcess :
                             bc+=GetSingleTransacBC(self.pricf[td][L[i]],dk = -num)
                             amm+=GetSingleTransacBC(self.pricf[td][L[i]],dk = -num)
                     K[maxi] = int((sd[-1]+bc)/((1.001)*self.pricf[td][maxi]))
-                    bc+=GetSingleTransacBC(self.pricf[maxi],dk = K[maxi])
+                    bc+=GetSingleTransacBC(self.pricf[td][maxi],dk = K[maxi])
 
                 Qi+=fact*GetReward(np.array(self.pricf[td]),np.array(self.pricf[td+1]),sd[150:180],sd[150:180]+np.array(K))
                 fact*=self.gamma
                 sd[-1]+=bc
                 L = []
-                for i in range(0,30):
-                    L+=self.vecf[td+1][i]
+                L+=self.vecf[td+1]
                 sd[0:150] = np.array(L)
                 sd[150:180] += np.array(K)
                 td+=1
             return Qi
+
+
+    def GetStateVec(self):
+        #print(self.data[0])
+        for x in self.data:
+            z = np.array(x)
+            L = []
+            P = []
+            #print(z.shape)
+            for i in range(0,z.shape[0]):
+                L += list(z[i,[3,8,9,10,11]])
+                P.append(z[i,3])
+            #print(len(L))
+            #print(len(P))
+            self.vecf.append(L)
+            self.pricf.append(P)
+
+    #The State is s at time t
+    def CreateDataSet(self):
+
+        for i in range(0,len(self.vecf)-101):
+            sa=self.vecf[i]
+            #print(len(sa))
+            for j in range(0,2):
+                sbio = []
+                sbio+=sa
+                sbio+=list(np.random.randint(0,1000,30))
+                for k in range(0,2):
+                    sd = []
+                    for x in sbio:
+                        sd.append(x)
+                #    print(1,len(sbio))
+                    sd.append(random.random()*1000000)
+                #    print(2,len(sbio))
+                #    print(1,len(sd))
+                    for z in range(0,10):
+                        #print(2,len(sd))
+                        La = np.zeros(30)
+                        bc = sd[-1]
+                        tod = []
+                        for t in range(0,30):
+                            a = random.randint(-1,1)
+                            if a == -1:
+                                bu = -int(random.random()*float(sd[150+t]))
+                                bc+=GetSingleTransacBC(self.pricf[i][t],dk = bu)
+                                La[t]=bu
+                            elif a==1:
+                                tod.append(t)
+                        bcp = bc*random.random()
+                        ston = np.random.randint(0,1000,len(tod))
+                        ston = (ston/np.sum(ston))*bcp
+                        g = 0
+                        for x in tod:
+                            La[x]=int(ston[g]/(self.pricf[i][x]*1.0015))
+                            g+=1
+                        self.XI.append(sd)
+
+                        self.AI.append(La)
+                        snext = []
+
+                        snext+=self.vecf[i+1]
+                        snext += list(np.array(sd[150:180])+np.array(La))
+                        snext.append(sd[-1]+GetBalanceChange(np.array(self.pricf[i]),dk = np.array(La)))
+                    #    print(len(snext))
+                        self.YI.append(self.TargetQ(snext,i+1)+GetReward(np.array(self.pricf[i]),np.array(self.pricf[i+1]),np.array(sd[150:180]),np.array(snext[150:180])))
+            print("Processing Completed for ",i,"th timeframe.")
+
+        with open('XI.npy','wb') as f:
+            np.save(f,np.array(self.XI))
+        with open('YI.npy','wb') as f:
+            np.save(f,np.array(self.YI))
+        with open('AI.npy','wb') as f:
+            np.save(f,np.array(self.AI))
+
+
+
+
+
 
 
 X = PreProcess('done_data.csv',entries = 9000000)

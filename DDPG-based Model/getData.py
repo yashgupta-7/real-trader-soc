@@ -34,7 +34,10 @@ class Par:
                         dict[z] = []
 
                 for i in range(0,len(leg)):
-                    dict[leg[i]].append(y[i])
+                    if i==2:
+                        dict[leg[i]].append(y[i])
+                    else:
+                        dict[leg[i]].append(float(y[i].replace('\n','')))
                 dict[leg[1]].pop()
                 dict[leg[1]].append(j)
 

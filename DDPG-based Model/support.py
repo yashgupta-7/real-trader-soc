@@ -5,6 +5,7 @@ import numpy as np
 
 
 def GetSingleTransacBC(p,dk,transac = 0.001):
+    #print(type(p))
     return (p*(-dk)) - abs(p*dk*transac)
 
 def GetBalanceChange(p,dk,transac = 0.001):
