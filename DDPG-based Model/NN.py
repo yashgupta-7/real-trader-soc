@@ -19,6 +19,9 @@ def Huber(AL,Y):
 def HuberD(AL,Y):
     return np.multiply((np.abs(Y-AL) <=100000),AL-Y) + np.multiply((AL-Y>10000).astype(float)+((AL-Y<-10000).astype(float))*(-1),100000)
 
+def MAEWeightedLossDet(AL,Y):
+    return np.multiply(((AL>Y).astype(float)),(1/np.abs(Y))) + np.multiply(((AL<Y).astype(float)),(-1/np.abs(Y)))
+
 def initialize_parameters_deep(layer_dims):
 
     np.random.seed(3)
@@ -103,6 +106,14 @@ def linear_backward(dZ, cache):
     db =  1/m*(np.sum(dZ,axis=0, keepdims=True))
     dA_prev = np.dot(dZ,W.T)
 
+    # print(type(dZ))
+    # print(b.shape)
+    # print(A_prev.shape)
+    # print(W.shape)
+    # print(dW.shape)
+    # print(db.shape)
+    # print(dA_prev.shape)
+
     assert (dA_prev.shape == A_prev.shape)
     assert (dW.shape == W.shape)
     assert (db.shape == b.shape)
@@ -133,7 +144,35 @@ def L_model_backward(AL, Y, caches):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
 
     # Initializing the backpropagation
-    dAL = HuberD(AL,Y)
+    dAL = MAEWeightedLossDet(AL,Y)
+
+
+    # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
+
+    current_cache = caches[L-1]
+    grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL,current_cache,"linear")
+
+
+    for l in reversed(range(L-1)):
+        # lth layer: (RELU -> LINEAR) gradients.
+        # Inputs: "grads["dA" + str(l + 2)], caches". Outputs: "grads["dA" + str(l + 1)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)]
+
+        current_cache = caches[l]
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA"+str(l+2)],current_cache,"relu")
+        grads["dA" + str(l + 1)] = dA_prev_temp
+        grads["dW" + str(l + 1)] = dW_temp
+        grads["db" + str(l + 1)] = db_temp
+
+    return grads
+
+def L_model_backwardAction(AL, Y, caches):
+
+    grads = {}
+    L = len(caches) # the number of layers
+    Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
+
+    # Initializing the backpropagation
+    dAL = np.array([[-1000.00]])
 
 
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
@@ -172,7 +211,7 @@ def initialize_adam(parameters) :
 
     return v, s
 
-def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
+def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.1,
                                 beta1=0.9, beta2=0.999, epsilon=1e-8):
 
         L = len(parameters) // 2                 # number of layers in the neural networks
@@ -207,57 +246,66 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
 
             # Update parameters. Inputs: "parameters, learning_rate, v_corrected, s_corrected, epsilon". Output: "parameters".
 
-            parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - (learning_rate * v_corrected["dW" + str(l + 1)]) / (np.sqrt(s["dW" + str(l + 1)]) + epsilon)
-            parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - (learning_rate * v_corrected["db" + str(l + 1)]) / (np.sqrt(s["db" + str(l + 1)]) + epsilon)
+            parameters["W" + str(l + 1)] = parameters["W" + str(l + 1)] - (learning_rate * v_corrected["dW" + str(l + 1)]) / (np.sqrt(s_corrected["dW" + str(l + 1)]) + epsilon)
+            parameters["b" + str(l + 1)] = parameters["b" + str(l + 1)] - (learning_rate * v_corrected["db" + str(l + 1)]) / (np.sqrt(s_corrected["db" + str(l + 1)]) + epsilon)
 
 
         return parameters, v, s
 
 
-layerDim = [211,256,256,1]
-Parameters = initialize_parameters_deep(layerDim)
-V,S = initialize_adam(Parameters)
-
-iter = 1001
-
-
-with open('XI.npy','rb') as f:
-    X = np.load(f)
-with open('AI.npy','rb') as f:
-    A = np.load(f)
-with open('YI.npy','rb') as f:
-    Y = np.load(f)
-
-Y = np.expand_dims(Y,axis = 1)
-
-X = np.hstack((X,A))
-m = X.shape[0]
-
-
-for i in range(1,iter+1):
-    cal = 0
-    for j in range(0,10):
-        al, cac = L_model_forward(X[11296*j:11296*(j+1)],Parameters)
-        #print('Done')
-        Grad = L_model_backward(al,Y[11296*j:11296*(j+1)],cac)
-        #print('Done')
-        Parameters,V,S = update_parameters_with_adam(Parameters,Grad,V,S,i)
-        cal += compute_cost(al,Y[11296*j:11296*(j+1)])
-    #print('Done')
-    if i%10==0:
-        with open('paramFinal'+str(i)+'.soc','wb') as f:
-            pickle.dump(Parameters,f)
-    print('After the ',i,'th iteration, We have loss = ',cal)
-
-with open('param.soc','wb') as f:
-    pickle.dump(Parameters,f)
-# cal = 0
-# with open('param500.soc','rb') as f:
-#     pra = pickle.load(f)
+m = 1
+# layerDim = [211,256,256,1]
+# Parameters = initialize_parameters_deep(layerDim)
+# V,S = initialize_adam(Parameters)
 #
-# for j in range(0,10):
-#     al, cac = L_model_forward(X[11296*j:11296*(j+1)],Parameters)
+# iter = 1001
 #
-#     cal += compute_cost(al,Y[11296*j:11296*(j+1)])
 #
-# print(cal)
+# with open('XI.npy','rb') as f:
+#     X = np.load(f)
+# with open('AI.npy','rb') as f:
+#     A = np.load(f)
+# with open('YI.npy','rb') as f:
+#     Y = np.load(f)
+#
+#
+# Y = np.expand_dims(Y,axis = 1)
+#
+# X = np.hstack((X,A))
+# X = X[:,0:79072]
+# Y = Y[:,0:79072]
+# m = X.shape[0]
+# XX = np.hstack((X,Y))
+# np.random.shuffle(XX)
+# X = XX[:,0:211]
+# Y = XX[:,211:]
+#
+#
+#
+# for i in range(1,iter+1):
+#     cal = 0
+#     for j in range(0,10):
+#         al, cac = L_model_forward(X[11296*j:11296*(j+1)],Parameters)
+#         #print('Done')
+#         Grad = L_model_backward(al,Y[11296*j:11296*(j+1)],cac)
+#         #print('Done')
+#         Parameters,V,S = update_parameters_with_adam(Parameters,Grad,V,S,i)
+#         cal += compute_cost(al,Y[11296*j:11296*(j+1)])
+#     #print('Done')
+#     if i%10==0:
+#         with open('paramFinal'+str(i)+'.soc','wb') as f:
+#             pickle.dump(Parameters,f)
+#     print('After the ',i,'th iteration, We have loss = ',cal)
+#
+# with open('param.soc','wb') as f:
+#     pickle.dump(Parameters,f)
+# # cal = 0
+# # with open('param500.soc','rb') as f:
+# #     pra = pickle.load(f)
+# #
+# # for j in range(0,10):
+# #     al, cac = L_model_forward(X[11296*j:11296*(j+1)],Parameters)
+# #
+# #     cal += compute_cost(al,Y[11296*j:11296*(j+1)])
+# #
+# # print(cal)

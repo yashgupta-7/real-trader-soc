@@ -22,3 +22,6 @@ def SingleRewardCalc(pa,pb,ki,kf,transac=0.001):
 
 def GetReward(pb,pa,ki,kf,transac = 0.001):
     return GetBalanceChange(pb,transac,kf-ki) + np.sum((kf*pa)-(ki*pb))
+
+def GetEvaluation(si):
+    return np.sum(np.multiply(si[0:150:5],si[150:180]))*0.999 + si[-1]
