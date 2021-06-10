@@ -47,18 +47,27 @@ class actionPredict:
     def GenerateIntegral(self,A, prior):
         bal = 0
         bal += self.CurrBalance
-
+        gotbal = 0
+        couldhavegotbal = 0
         for i in range(0,len(A)):
 
             if A[i]<0:
+
+                couldhavegotbal += sp.GetSingleTransacBC(self.CurrState[i*5],A[i])
                 A[i] = round(A[i])
                 if abs(A[i]) > self.CurrState[150+i]:
                     A[i] = -self.CurrState[150+i]
                 bal+=sp.GetSingleTransacBC(self.CurrState[i*5],A[i])
+                gotbal+=sp.GetSingleTransacBC(self.CurrState[i*5],A[i])
+
+        if gotbal > 0.01:
+            ratio = gotbal/couldhavegotbal
+        else:
+            ratio = 0.9
 
         for i in list(np.flip(np.argsort(np.array(prior)))):
             if A[i]>0:
-                x = round(A[i])
+                x = round(A[i]*ratio)
                 if bal > sp.GetSingleTransacBC(self.CurrState[i*5],x):
                     A[i] = x
                     bal-= sp.GetSingleTransacBC(self.CurrState[i*5],x)
@@ -92,10 +101,13 @@ class actionPredict:
             g+=1
         return La
 
-    def OptimizeAction(self,A,V,S,t,learning_rate=0.01,beta1=0.9, beta2=0.999, epsilon=1e-8):
+    def OptimizeAction(self,A,V,S,t,learning_rate=0.1,beta1=0.9, beta2=0.999, epsilon=1e-8):
         # print(type(self.CurrState))
         # print(type(A))
+        #print(len(self.CurrState))
+        #print(A.shape)
         curr = np.expand_dims(np.array(self.CurrState+list(A)),axis = 0)
+        #print(curr.shape)
         al, cac = NN.L_model_forward(curr,self.Parameters)
         #print(al)
         gra = NN.L_model_backwardAction(al,np.abs(al)*1000,cac)
@@ -104,21 +116,31 @@ class actionPredict:
         S = beta2*S + (1-beta2)*np.power(gra['dA1'][:,181:],2)
         SC = S/(1-np.power(beta2,t))
         curr[:,181:] = curr[:,181:]-(learning_rate*(VC))/(np.sqrt(SC)+epsilon)
-        return list(curr[:,181:]),V,S
+        return np.squeeze(curr[:,181:],axis = 0),V,S
 
 
 
     def CalculateOptimal(self) :
-        for i in range(0,1000):
+        for i in range(0,10):
             A = self.GetAction()
             self.CurrActionInp = [x for x in A]
             V,S = np.zeros((1,len(A))),np.zeros((1,len(A)))
-            for i in range(0,100):
-                A,V,S = self.OptimizeAction(A,V,S,i+1)
+            #print('Processing started for ',i,'th action.')
+            j = 0
+            inc = 0
+            incPrev = 100
+            val = 1000
+            while val > 0.00004:
+                A,V,S = self.OptimizeAction(A,V,S,j+1)
+                inc = float(NN.L_model_forward(np.expand_dims(np.array(self.CurrState+list(A)),axis = 0),self.Parameters)[0])
+                val = abs(inc-incPrev)/abs(incPrev)
+                incPrev = inc
+                j+=1
                 #print(A)
-                if not self.CheckFeasible(list(A[0])):
-                    break
-            A = self.GenerateIntegral(list(A[0]),list(A[0]-np.array(self.CurrActionInp)))
+                # if not self.CheckFeasible(list(A[0])):
+                #     break
+            #print('Processing ended for ',i,'th action.')
+            A = self.GenerateIntegral(list(A),list(np.multiply(A-np.array(self.CurrActionInp),self.CurrState[0:150:5])))
             z = float(NN.L_model_forward(np.expand_dims(np.array(self.CurrState+A),axis = 0),self.Parameters)[0])
             if z > self.CurrOptimalInp:
                 self.CurrOptimalInp = z
