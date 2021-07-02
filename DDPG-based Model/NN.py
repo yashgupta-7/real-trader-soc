@@ -172,7 +172,7 @@ def L_model_backwardAction(AL, Y, caches):
     Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
 
     # Initializing the backpropagation
-    dAL = np.array([[-1000.00]])
+    dAL = np.array([[-100000.00]])
 
 
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
