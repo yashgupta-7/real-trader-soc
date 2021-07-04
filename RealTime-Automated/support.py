@@ -1,3 +1,5 @@
+import numpy as np
+
 # Stock
 # YearRangeLow
 # YearRangeHigh
@@ -59,13 +61,17 @@
 
 
 #Assume that dat, almost always has size of 100
+
+def GetGrahams(YH,YL,EPS, G):
+    return (EPS*(7.0+(1.5*G))*4.4)/(YH-YL)
+
 def GetRSI(dat):
     r = dat[1:]
     l = dat[:-1]
     X = np.divide(r-l,l)
-    p = np.sum(np.multiply(X>0,p))
-    l = np.sum(np.multiply(X<0,p))
-    return 100.0-(100.0/(1+(p/l)))
+    p = np.sum(np.multiply((X>0).astype(float),X))
+    l = np.sum(np.multiply((X<0).astype(float),X))
+    return 100.0-(100.0/(1+(p/(l+1e-8))))
 
 def AG(dat):
     B = dat[::25]
@@ -76,21 +82,23 @@ def AG(dat):
         for j in range(i+1,s):
             L.append((B[j]-B[i])/m)
             L.append((B[j]/B[i])*100)
+    return L
 def DD(data):
-    r = dat[1:]
-    l = dat[:-1]
+    r = data[1:]
+    l = data[:-1]
     X = np.divide(r-l,l)
-    return min(A)
+    return min(X)
+
 
 def StdDMen(data):
-    return (np.std(data)/mp.mean(dat))*100
+    return (np.std(data)/np.mean(data))*100
 
 def R2(data):
     from sklearn.linear_model import LinearRegression
     x = np.arange(len(data))
     model = LinearRegression()
-    model.fit(x,data)
-    return (model.score(x,data)/np.mean(data))*100
+    model.fit(x.reshape((-1,1)),data)
+    return (model.score(x.reshape((-1,1)),data)/(np.mean(data)**2))*100
 
 def ATR(data):
     cnt = 0
@@ -131,3 +139,14 @@ def Moment(data):
             x = alpha*x + (1-alpha)*data[i]
 
     return x/data[-1]
+
+def MomentJ(data):
+    x = 0
+    alpha = 0.75
+    for i in range(0,len(data)):
+        if i==0:
+            x  = data[i]
+        else:
+            x = alpha*x + (1-alpha)*data[i]
+
+    return x

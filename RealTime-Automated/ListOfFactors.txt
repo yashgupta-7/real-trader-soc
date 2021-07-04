@@ -1,5 +1,4 @@
-Stock, YearRangeLow, YearRangeHigh, MarketCap,PE Ratio, DividendYield, QuaterlyRevenue, QuaterlyYearlyChangeInRevenue, QuaterlyNetIncome, QuaterlyGrowthInNetIncome, QuaterlyDilutedEPS, QuaterlyDilutedEPSGrowth, QuaterlyNetProfitMargin, QuaterlyNetProfitMarginGrowth, QuaterlyOperating Income, QuaterlyOperating Income Growth, QuaterlyCash On Hand, QuaterlyCash on Hand Growth, QuaterlyCost of Revenue, QuaterlyCost of Revenue Growth, AnnualRevenue, AnnualYearlyChangeInRevenue, AnnualNetIncome, AnnualGrowthInNetIncome, AnnualDilutedEPS, AnnualDilutedEPSGrowth, AnnualNetProfitMargin, AnnualNetProfitMarginGrowth, AnnualOperating Income, AnnualOperating Income Growth,Net Change in Cash,Growth in NetChange in Cash ,AnnualCash On Hand, AnnualCash on Hand Growth, AnnualCost of Revenue, AnnualCost of Revenue Growth
-Beta
+Stock, YearRangeLow, YearRangeHigh, MarketCap,PE Ratio, DividendYield, QuaterlyRevenue, QuaterlyYearlyChangeInRevenue, QuaterlyNetIncome, QuaterlyGrowthInNetIncome, QuaterlyDilutedEPS, QuaterlyDilutedEPSGrowth, QuaterlyNetProfitMargin, QuaterlyNetProfitMarginGrowth, QuaterlyOperating Income, QuaterlyOperating Income Growth, QuaterlyCash On Hand, QuaterlyCash on Hand Growth, QuaterlyCost of Revenue, QuaterlyCost of Revenue Growth, AnnualRevenue, AnnualYearlyChangeInRevenue, AnnualNetIncome, AnnualGrowthInNetIncome, AnnualDilutedEPS, AnnualDilutedEPSGrowth, AnnualNetProfitMargin, AnnualNetProfitMarginGrowth, AnnualOperating Income, AnnualOperating Income Growth,Net Change in Cash,Growth in NetChange in Cash ,AnnualCash On Hand, AnnualCash on Hand Growth, AnnualCost of Revenue, AnnualCost of Revenue Growth,Beta
 
 
 Things pertaining to returns of a particular stock
@@ -21,8 +20,6 @@ Things pertaining to returns of a particular stock
 31) MACD to current price
 32) Relative Strength Index to current price
 33) Average True Range to current price
-34) Alpha
-35) Risk Free rate of return
 37) R-squared/mean value of stock
 17) Standard Deviation of Stocks over various intervals/Mean
 18) Beta
