@@ -2,11 +2,20 @@ import numpy as np
 import math as m
 import pickle
 
+eps = 1e-4
+
 def relu(z):
     return (z>0)*z , z
 
 def linear(z):
     return z,z
+
+def sigmoid(z):
+    return 1/(1+np.exp(-z)),z
+
+def sigmoid_backward(dA,z):
+    s = sigmoid(z)[0]
+    return dA*(s)*(1.00-s)
 
 def relu_backward(dA,z):
     return dA*((z>0).astype(float))
@@ -82,14 +91,28 @@ def L_model_forward(X, parameters):
 
 
 
-    AL, cache = linear_activation_forward(A,parameters['W'+str(L)],parameters['b'+str(L)],"linear")
+    AL, cache = linear_activation_forward(A,parameters['W'+str(L)],parameters['b'+str(L)],"relu")
     caches.append(cache)
 
 
 
-    assert(AL.shape == (X.shape[0],12))
+    assert(AL.shape == (X.shape[0],4))
 
     return AL, caches
+
+def cum(AL,YT,YV,YK,YR):
+    #C = [1.00,1/6.00,1/18.00,1/36.00,1/54.00,1/75.00]
+    AZ = (AL+(eps/4.0))/np.expand_dims(np.sum(AL,axis = 1)+eps,axis = 1)
+
+    yyt = np.expand_dims((YT[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyv = np.expand_dims((YV[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyk =  np.expand_dims((YK[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyr = np.expand_dims((YR[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    L = list(np.sum(AZ*np.hstack((np.hstack((np.hstack((yyt,yyv)),yyk)),yyr)),axis = 1))
+    p =1
+    for x in L:
+        p*=(1+(x/100.0))
+    return p
 
 def compute_cost(AL, Y):
 
@@ -132,6 +155,9 @@ def linear_activation_backward(dA, cache, activation):
     elif activation == "linear":
         dZ = Linear_backward(dA,activation_cache)
         dA_prev, dW, db = linear_backward(dZ,linear_cache)
+    else:
+        dZ = sigmoid_backward(dA,activation_cache)
+        dA_prev, dW, db = linear_backward(dZ,linear_cache)
 
     return dA_prev, dW, db
 
@@ -164,6 +190,38 @@ def L_model_backward(AL, Y, caches):
         grads["db" + str(l + 1)] = db_temp
 
     return grads
+
+def L_model_backward2(AL, YT,YV,YK,YR, caches):
+
+    grads = {}
+    L = len(caches) # the number of layers
+    global m
+    # Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
+    AZ = (np.expand_dims(np.sum(AL,axis = 1)+(0.75*eps),axis = 1)-AL)*np.square(np.expand_dims(1/(np.sum(AL,axis = 1)+eps),axis = 1))
+    # Initializing the backpropagation
+    yyt = np.expand_dims((YT[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyv = np.expand_dims((YV[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyk =  np.expand_dims((YK[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    yyr = np.expand_dims((YR[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
+    dAL =  (1000.0)*AZ*np.hstack((np.hstack((np.hstack((yyt,yyv)),yyk)),yyr))
+    # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
+
+    current_cache = caches[L-1]
+    grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL,current_cache,"relu")
+
+
+    for l in reversed(range(L-1)):
+        # lth layer: (RELU -> LINEAR) gradients.
+        # Inputs: "grads["dA" + str(l + 2)], caches". Outputs: "grads["dA" + str(l + 1)] , grads["dW" + str(l + 1)] , grads["db" + str(l + 1)]
+
+        current_cache = caches[l]
+        dA_prev_temp, dW_temp, db_temp = linear_activation_backward(grads["dA"+str(l+2)],current_cache,"relu")
+        grads["dA" + str(l + 1)] = dA_prev_temp
+        grads["dW" + str(l + 1)] = dW_temp
+        grads["db" + str(l + 1)] = db_temp
+
+    return grads
+
 
 def L_model_backwardAction(AL, Y, caches):
 
@@ -211,8 +269,8 @@ def initialize_adam(parameters) :
 
     return v, s
 
-def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.1,
-                                beta1=0.9, beta2=0.9, epsilon=1e-8):
+def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
+                                beta1=0.75, beta2=0.75, epsilon=1e-8):
 
         L = len(parameters) // 2                 # number of layers in the neural networks
         v_corrected = {}                         # Initializing first moment estimate, python dictionary
@@ -255,17 +313,30 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.1,
 
 
 
-with open('XTATA.npy','rb') as f:
-    X = np.load(f)
+
 with open('YTATA.npy','rb') as f:
-    Y = np.load(f)
+    YT = np.load(f)
+
+with open('YVI.npy','rb') as f:
+    YV = np.load(f)
 
 
+with open('YKOT.npy','rb') as f:
+    YK = np.load(f)
 
-m = Y.shape[0]
-layerDim = [55,128,64,12]
+with open('YREL.npy','rb') as f:
+    YR = np.load(f)
+
+m = min(YT.shape[0],YV.shape[0],YK.shape[0],YR.shape[0])
+YT = YT[0:m]
+YK = YK[0:m]
+YV = YV[0:m]
+YR = YR[0:m]
+layerDim = [48,24,16,8,4]
 Parameters = initialize_parameters_deep(layerDim)
 V,S = initialize_adam(Parameters)
+
+X = np.hstack((np.hstack((np.hstack((YT,YV)),YK)),YR))
 
 iter = 10001
 
@@ -273,17 +344,17 @@ for i in range(1,iter+1):
 
     al, cac = L_model_forward(X,Parameters)
     #print('Done')
-    Grad = L_model_backward(al,Y,cac)
+    Grad = L_model_backward2(al,YT,YV,YK,YR,cac)
     #print('Done')
     Parameters,V,S = update_parameters_with_adam(Parameters,Grad,V,S,i)
-    cal = compute_cost(al,Y)
+    cal = cum(al,YT,YV,YK,YR)
     #print('Done')
     if i%100==0:
-        with open('paramFinal'+str(i)+'.soc','wb') as f:
+        with open('RLFinal'+str(i)+'.soc','wb') as f:
             pickle.dump(Parameters,f)
     print('After the ',i,'th iteration, We have loss = ',cal)
 
-with open('param.soc','wb') as f:
+with open('RL.soc','wb') as f:
     pickle.dump(Parameters,f)
 # cal = 0
 # with open('param500.soc','rb') as f:

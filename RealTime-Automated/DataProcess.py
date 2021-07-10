@@ -39,7 +39,7 @@ import numpy as np
 # 34) Beta
 
 
-def GetX(StockPrice100, StockPrice1000):
+def GetX(StockPrice1000):
 	# X= []
 	# X.append(CompanyInf[3])
 	# X.append(CompanyInf[4])
@@ -68,6 +68,7 @@ def GetX(StockPrice100, StockPrice1000):
 	# X.append(CompanyInf[31])
 	# X.append(CompanyInf[33])
 	Y = []
+	StockPrice100 = StockPrice1000[900:]
 	Y.append(sp.Moment(StockPrice1000))
 	Y.append(sp.Moment(StockPrice1000[500:]))
 	Y.append(sp.Moment(StockPrice1000[750:]))
