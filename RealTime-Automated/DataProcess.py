@@ -109,49 +109,49 @@ def GetY(InitialPrice,StockPriceUpcoming750):
 	m = np.argmax(StockPriceUpcoming750[:10])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))    #0
 	m = np.argmax(StockPriceUpcoming750[:60])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))   #1
 	m = np.argmax(StockPriceUpcoming750[:180])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))      #2
 	m = np.argmax(StockPriceUpcoming750[:360])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))      #3
 	m = np.argmax(StockPriceUpcoming750[:540])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))      #4
 	m = np.argmax(StockPriceUpcoming750[:750])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))        #5
 	m = np.argmin(StockPriceUpcoming750[:10])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))             #6
 	m = np.argmin(StockPriceUpcoming750[:60])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))                #7
 	m = np.argmin(StockPriceUpcoming750[:180])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))               #8
 	m = np.argmin(StockPriceUpcoming750[:360])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))              #9
 	m = np.argmin(StockPriceUpcoming750[:540])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))                      #10
 	m = np.argmin(StockPriceUpcoming750[:750])
 	l = max(0,m-10)
 	r = min(StockPriceUpcoming750.shape[0],m+10)
-	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))
+	X.append(100.0*((sp.MomentJ(StockPriceUpcoming750[l:r])/InitialPrice)-1.00))                 #11
 	return np.array(X)

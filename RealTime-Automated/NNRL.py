@@ -52,7 +52,6 @@ def linear_forward(A, W, b):
 
     Z = np.dot(A,W)+b
 
-    assert(Z.shape == (A.shape[0], W.shape[1]))
     cache = (A, W, b)
 
     return Z, cache
@@ -72,7 +71,7 @@ def linear_activation_forward(A_prev, W, b, activation):
         Z, linear_cache = linear_forward(A_prev,W,b)
         A, activation_cache = linear(Z)
 
-    assert (A.shape == (A.shape[0], W.shape[1]))
+
     cache = (linear_cache, activation_cache)
 
     return A, cache
@@ -91,19 +90,17 @@ def L_model_forward(X, parameters):
 
 
 
-    AL, cache = linear_activation_forward(A,parameters['W'+str(L)],parameters['b'+str(L)],"relu")
+    AL, cache = linear_activation_forward(A,parameters['W'+str(L)],parameters['b'+str(L)],"sigmoid")
     caches.append(cache)
 
 
-
-    assert(AL.shape == (X.shape[0],4))
 
     return AL, caches
 
 def cum(AL,YT,YV,YK,YR):
     #C = [1.00,1/6.00,1/18.00,1/36.00,1/54.00,1/75.00]
-    AZ = (AL+(eps/4.0))/np.expand_dims(np.sum(AL,axis = 1)+eps,axis = 1)
 
+    AZ = (np.exp(AL))/np.expand_dims(np.sum(np.exp(AL),axis = 1),axis = 1)
     yyt = np.expand_dims((YT[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
     yyv = np.expand_dims((YV[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
     yyk =  np.expand_dims((YK[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
@@ -197,7 +194,9 @@ def L_model_backward2(AL, YT,YV,YK,YR, caches):
     L = len(caches) # the number of layers
     global m
     # Y = Y.reshape(AL.shape) # after this line, Y is the same shape as AL
-    AZ = (np.expand_dims(np.sum(AL,axis = 1)+(0.75*eps),axis = 1)-AL)*np.square(np.expand_dims(1/(np.sum(AL,axis = 1)+eps),axis = 1))
+
+    AZ = -(np.exp(AL))/np.expand_dims(np.sum(np.exp(AL),axis = 1),axis = 1)
+    AZ *= (1.00-AZ)
     # Initializing the backpropagation
     yyt = np.expand_dims((YT[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
     yyv = np.expand_dims((YV[:,0:6]*[1.00, 1/6.00 ,1/18.00, 1/36.00,1/54.00,1/75.00]).max(axis = 1),axis = 1)
@@ -207,7 +206,7 @@ def L_model_backward2(AL, YT,YV,YK,YR, caches):
     # Lth layer (SIGMOID -> LINEAR) gradients. Inputs: "AL, Y, caches". Outputs: "grads["dAL"], grads["dWL"], grads["dbL"]
 
     current_cache = caches[L-1]
-    grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL,current_cache,"relu")
+    grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL,current_cache,"sigmoid")
 
 
     for l in reversed(range(L-1)):
@@ -270,7 +269,7 @@ def initialize_adam(parameters) :
     return v, s
 
 def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
-                                beta1=0.75, beta2=0.75, epsilon=1e-8):
+                                beta1=0.5, beta2=0.5, epsilon=1e-8):
 
         L = len(parameters) // 2                 # number of layers in the neural networks
         v_corrected = {}                         # Initializing first moment estimate, python dictionary
@@ -313,49 +312,51 @@ def update_parameters_with_adam(parameters, grads, v, s, t, learning_rate=0.01,
 
 
 
+#
+# with open('YTATA.npy','rb') as f:
+#     YT = np.load(f)
+#
+# with open('YVI.npy','rb') as f:
+#     YV = np.load(f)
+#
+#
+# with open('YKOT.npy','rb') as f:
+#     YK = np.load(f)
+#
+# with open('YREL.npy','rb') as f:
+#     YR = np.load(f)
+#
+# m = min(YT.shape[0],YV.shape[0],YK.shape[0],YR.shape[0])
+# YT = YT[0:m]
+# YK = YK[0:m]
+# YV = YV[0:m]
+# YR = YR[0:m]
+# layerDim = [48,24,16,8,4]
+# Parameters = initialize_parameters_deep(layerDim)
+# V,S = initialize_adam(Parameters)
+#
+# X = np.hstack((np.hstack((np.hstack((YT,YV)),YK)),YR))
+#
+# iter = 10001
+# maxi = 0
+#
+# for i in range(1,iter+1):
+#
+#     al, cac = L_model_forward(X,Parameters)
+#     #print('Done')
+#     Grad = L_model_backward2(al,YT,YV,YK,YR,cac)
+#     #print('Done')
+#     Parameters,V,S = update_parameters_with_adam(Parameters,Grad,V,S,i)
+#     cal = cum(al,YT,YV,YK,YR)
+#     #print('Done')
+#     if cal>maxi:
+#         with open('RLFinal'+'.soc','wb') as f:
+#             pickle.dump(Parameters,f)
+#         maxi = cal
+#     print('After the ',i,'th iteration, We have loss = ',cal)
 
-with open('YTATA.npy','rb') as f:
-    YT = np.load(f)
-
-with open('YVI.npy','rb') as f:
-    YV = np.load(f)
-
-
-with open('YKOT.npy','rb') as f:
-    YK = np.load(f)
-
-with open('YREL.npy','rb') as f:
-    YR = np.load(f)
-
-m = min(YT.shape[0],YV.shape[0],YK.shape[0],YR.shape[0])
-YT = YT[0:m]
-YK = YK[0:m]
-YV = YV[0:m]
-YR = YR[0:m]
-layerDim = [48,24,16,8,4]
-Parameters = initialize_parameters_deep(layerDim)
-V,S = initialize_adam(Parameters)
-
-X = np.hstack((np.hstack((np.hstack((YT,YV)),YK)),YR))
-
-iter = 10001
-
-for i in range(1,iter+1):
-
-    al, cac = L_model_forward(X,Parameters)
-    #print('Done')
-    Grad = L_model_backward2(al,YT,YV,YK,YR,cac)
-    #print('Done')
-    Parameters,V,S = update_parameters_with_adam(Parameters,Grad,V,S,i)
-    cal = cum(al,YT,YV,YK,YR)
-    #print('Done')
-    if i%100==0:
-        with open('RLFinal'+str(i)+'.soc','wb') as f:
-            pickle.dump(Parameters,f)
-    print('After the ',i,'th iteration, We have loss = ',cal)
-
-with open('RL.soc','wb') as f:
-    pickle.dump(Parameters,f)
+# with open('RL.soc','wb') as f:
+#     pickle.dump(Parameters,f)
 # cal = 0
 # with open('param500.soc','rb') as f:
 #     pra = pickle.load(f)
