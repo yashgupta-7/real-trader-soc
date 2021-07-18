@@ -1,3 +1,12 @@
+'''
+PPO Model for Cartpole OpenAI Environment
+ppo_torch.py
+Author: P Balasubramanian
+Start Date: 10 July 2021
+End Date: 16 July 2021
+Estimated Time for Completion: 20 Hours
+
+'''
 import os
 import numpy as np
 import torch as T

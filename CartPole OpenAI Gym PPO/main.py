@@ -1,3 +1,12 @@
+'''
+PPO Model for Cartpole OpenAI Environment
+main.py
+Author: P Balasubramanian
+Start Date: 10 July 2021
+End Date: 16 July 2021
+Estimated Time for Completion: 20 Hours
+
+'''
 import gym
 import numpy as np
 from ppo_torch import Agent
