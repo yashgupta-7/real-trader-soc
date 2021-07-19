@@ -49,7 +49,7 @@ class PPOMemory:
 
 class ActorNetwork(nn.Module):
     def __init__(self, n_actions, input_dims, alpha,
-            fc1_dims=256, fc2_dims=256, chkpt_dir='tmp/ppo'):
+            fc1_dims=256, fc2_dims=256, fc3_dims=128, chkpt_dir='tmp/ppo'):
         super(ActorNetwork, self).__init__()
 
         self.checkpoint_file = os.path.join(chkpt_dir, 'actor_torch_ppo')
@@ -58,7 +58,9 @@ class ActorNetwork(nn.Module):
                 nn.ReLU(),
                 nn.Linear(fc1_dims, fc2_dims),
                 nn.ReLU(),
-                nn.Linear(fc2_dims, n_actions),
+                nn.Linear(fc2_dims, fc3_dims),
+                nn.ReLU(),
+                nn.Linear(fc3_dims, n_actions),
                 nn.Softmax(dim=-1)
         )
 
