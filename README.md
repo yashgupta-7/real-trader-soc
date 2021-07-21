@@ -5,6 +5,9 @@ This is the repository of programs and reports of the Summer of Code 2021 Module
 
 ![](money.gif)
 
+Main Documentation link: https://docs.google.com/document/d/1pqTuWUhmX8x3bCH9S5Ko2ROKejpUAGmm_Ct_-XvzLO0/edit?usp=sharing<br>
+Video Link: https://drive.google.com/drive/folders/1Db4So1DXnxME9Ldav3mRS6srnctxkD4G?usp=sharing<br>
+
 Description of my SoC'21 Coding Journey:<br><br>
 I started my Reinforcement Learning journey by reading and understanding MDP's on the medium articles sent by my SoC mentors. It covered everything from properties of a Markov Decision Problem,Process, Markov Chains built its way throught the fundamental jargon such as states, actions, agent, environment, reward, episodic & non-terminating environments/games, transition probability, continuous & discrete action spaces, policy, optimal actions, policies and the Bellman, Bellman Optimality equation, Policy iteration, Value functions, Q-value, Q-Learning [9], Discounted Values & rewards right till methods to solve the Bellman Equation using Dynamic Programming methods to find the optimal policy.[6]<br><br>
 This was my first time reading articles to understand a totally new concept, so I took help from additional resources on the internet such as the Coursera course 'Introduction to RL' by the University of Alberta [7] (which I completed by doing multiple coding assignments, quizzes on the bellman equations, value and policy iteration), RL lectures given by David Silver[4] (One of the chief RL Scientists at Google's DeepMind)(only watched 3 videos, the intro and MDP parts), few articles in Medium on Q-Learning, MDPS, Policy Gradients and a few other awesome youtube channels such as ArxivInsights[6] and CIS 522 - Deep Learning[5]. All these resources provided me with strong fundamentals in RL. <br><br>
