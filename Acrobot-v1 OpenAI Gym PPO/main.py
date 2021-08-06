@@ -29,7 +29,7 @@ if __name__ == '__main__':
     agent = Agent(n_actions=env.action_space.n, batch_size=batch_size, 
                     alpha=alpha, n_epochs=n_epochs, 
                     input_dims=env.observation_space.shape)
-    n_games = 300
+    n_games = 1000
     agent.load_models()
 
     figure_file = 'plots/acrobot.png'

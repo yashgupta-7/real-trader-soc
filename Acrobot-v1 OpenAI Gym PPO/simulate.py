@@ -20,7 +20,7 @@ while not done:
     no_of_steps += 1
     #agent.remember(observation, action, prob, val, reward, done)
     observation = observationa
-    time.sleep(0.01)
+    time.sleep(0.03)
 print(score)
 print(no_of_steps)
 time.sleep(1)

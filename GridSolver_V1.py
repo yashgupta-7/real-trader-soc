@@ -200,7 +200,7 @@ if ans=='Y' or ans=='y':
 ans = input("Do you want to enter gamma? [Y/N]")
 if ans=='Y' or ans=='y':
 	print("Enter a number between 0 and 1")
-	gamma = double(input("Enter gamma: "))
+	gamma = float(input("Enter gamma: "))
 
 G = Grid(Rows,Columns,Start,Target,restricted_positions)
 A = Agent(G)
