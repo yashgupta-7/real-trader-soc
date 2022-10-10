@@ -21,7 +21,7 @@ def plot_learning_curve(x, scores, figure_file):
     plt.savefig(figure_file)
 
 if __name__ == '__main__':
-    env = gym.make('CartPole-v0')
+    env = gym.make('CartPole-v1')
     N = 20
     batch_size = 5
     n_epochs = 4

@@ -1,7 +1,10 @@
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 import gym
 import numpy as np
 from ppo_torch import Agent
 import time
+
 
 env = gym.make('CartPole-v0')
 
